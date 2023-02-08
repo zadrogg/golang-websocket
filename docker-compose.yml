@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  go-websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-proxy
+    env_file: .env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .env:/.env
