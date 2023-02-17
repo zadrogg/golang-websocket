@@ -4,9 +4,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: go-proxy
+    container_name: go-websocket
     env_file: .env
     ports:
       - "${PORT}:${PORT}"
+      - "${WS_PORT}:${WS_PORT}"
     volumes:
       - .env:/.env

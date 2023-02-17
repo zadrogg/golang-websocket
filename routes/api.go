@@ -3,10 +3,10 @@ package routes
 import (
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
-	"proxy-service/controllers"
+	ws "websocket/handlers"
 )
 
 func ApiRoutes() {
-	http.HandleFunc("/", controllers.ProxyRequest)
+	http.HandleFunc("/", ws.OnMessage)
 	http.HandleFunc("/docs/", httpSwagger.WrapHandler)
 }
