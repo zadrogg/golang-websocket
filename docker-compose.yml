@@ -9,5 +9,27 @@ services:
     ports:
       - "${PORT}:${PORT}"
       - "${WS_PORT}:${WS_PORT}"
+    networks:
+      - app_socket
     volumes:
       - .env:/.env
+  database-postgresql:
+    container_name: postgres
+    image: postgres:15.1
+    env_file: .env
+    ports:
+      - "${DB_PORT}:5432"
+    depends_on:
+      - go-websocket
+    networks:
+      - app_socket
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+
+networks:
+  app_socket:
+    driver: bridge
