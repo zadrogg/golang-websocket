@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/getsentry/sentry-go"
 	"net/http"
 	"os"
 )
@@ -37,7 +36,6 @@ func sendThrow(w http.ResponseWriter, err error, code int) {
 }
 
 func Throw500(w http.ResponseWriter, err error) {
-	sentry.CaptureMessage(err.Error())
 	sendThrow(w, err, 500)
 }
 
