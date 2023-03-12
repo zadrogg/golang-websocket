@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"websocket/config"
 	"websocket/handlers"
@@ -28,7 +28,9 @@ func init() {
 func main() {
 	conf := config.GetConfig()
 
-	logrus.Info("run server")
+	InitDb(conf)
+
+	log.Info("run server")
 
 	// роуты
 	routes.ApiRoutes()

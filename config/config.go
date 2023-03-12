@@ -10,6 +10,7 @@ type Config struct {
 	Redis  redisDB
 	Cache  cacheValue
 	Server server
+	Db     dbConnection
 }
 
 type dashSentry struct {
@@ -28,7 +29,17 @@ type cacheValue struct {
 }
 
 type server struct {
-	Url string
+	Url    string
+	DbType string
+}
+
+type dbConnection struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DbName   string
+	DbDsn    string
 }
 
 func GetConfig() *Config {
@@ -43,10 +54,19 @@ func GetConfig() *Config {
 			TypeStorage: getEnv("CACHE_TYPE", "memory"),
 		},
 		Server: server{
-			Url: getEnv("SERVER", "localhost:3000"),
+			Url:    getEnv("SERVER", "localhost:3000"),
+			DbType: getEnv("DB_TYPE", "sqlite"),
 		},
 		Sentry: dashSentry{
 			Dsn: getEnv("SENTRY_DSN", ""),
+		},
+		Db: dbConnection{
+			DbDsn:    getEnv("DB_DSN", "test.db"),
+			Host:     getEnv("DB_HOST", ""),
+			Port:     getEnvInt("DB_PORT", 5432),
+			User:     getEnv("DB_USER", ""),
+			Password: getEnv("DB_PASSWORD", ""),
+			DbName:   getEnv("DB_NAME", ""),
 		},
 	}
 }
