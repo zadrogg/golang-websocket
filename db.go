@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"time"
 	"websocket/config"
+	"websocket/models"
 )
 
-func InitDb(conf *config.Config) {
+func InitDb(conf *config.Config) *gorm.DB {
 	log.Debug("Set meta db driver " + conf.Server.DbType)
 
 	var db *gorm.DB
@@ -47,9 +48,13 @@ func InitDb(conf *config.Config) {
 		db.Debug()
 	}
 
-	err = db.Debug().AutoMigrate()
+	err = db.Debug().AutoMigrate(
+		models.UserConnection{},
+	)
 
 	if err != nil {
 		log.Panic(err)
 	}
+
+	return db
 }

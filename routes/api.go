@@ -4,10 +4,13 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 	"golang.org/x/net/websocket"
 	"net/http"
-	ws "websocket/handlers"
+	"websocket/controllers"
 )
 
 func ApiRoutes() {
-	http.Handle("/notify", websocket.Handler(ws.Echo))
+	http.Handle("/notify", websocket.Handler(controllers.ServerCreate))
 	http.HandleFunc("/docs/", httpSwagger.WrapHandler)
+	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	})
 }
