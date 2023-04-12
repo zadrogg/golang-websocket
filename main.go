@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"websocket/config"
 	"websocket/handlers"
-	"websocket/routes"
+	"websocket/models"
+	r "websocket/routes"
 )
 
 func init() {
@@ -28,12 +29,13 @@ func init() {
 func main() {
 	conf := config.GetConfig()
 
-	InitDb(conf)
+	//InitDb(conf)
+	models.ConnectDB()
 
 	log.Info("run server")
 
 	// роуты
-	routes.ApiRoutes()
+	r.ApiRoutes()
 
 	// запускаем сервер и пишем логи о ошибках
 	handlers.Error(http.ListenAndServe(conf.Server.Url, nil))

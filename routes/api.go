@@ -9,6 +9,8 @@ import (
 
 func ApiRoutes() {
 	http.Handle("/notify", websocket.Handler(controllers.ServerCreate))
+
+	http.HandleFunc("/ws-token", controllers.WsToken)
 	http.HandleFunc("/docs/", httpSwagger.WrapHandler)
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")

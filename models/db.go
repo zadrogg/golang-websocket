@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -8,13 +8,15 @@ import (
 	"strconv"
 	"time"
 	"websocket/config"
-	"websocket/models"
 )
 
-func InitDb(conf *config.Config) *gorm.DB {
+var DB *gorm.DB
+
+func ConnectDB() {
+	conf := config.GetConfig()
 	log.Debug("Set meta db driver " + conf.Server.DbType)
 
-	var db *gorm.DB
+	//var db *gorm.DB
 	var err error
 
 	newLogger := logger.New(
@@ -33,11 +35,11 @@ func InitDb(conf *config.Config) *gorm.DB {
 
 	switch conf.Server.DbType {
 	case "sqlite":
-		db, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
+		DB, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
 	case "mysql":
-		db, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
+		DB, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
 	case "postgres":
-		db, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
+		DB, err = gorm.Open(sqlite.Open(conf.Db.DbDsn), &confGorm)
 	}
 
 	if err != nil {
@@ -45,16 +47,14 @@ func InitDb(conf *config.Config) *gorm.DB {
 	}
 
 	if log.GetLevel() >= log.DebugLevel {
-		db.Debug()
+		DB.Debug()
 	}
 
-	err = db.Debug().AutoMigrate(
-		models.UserConnection{},
+	err = DB.Debug().AutoMigrate(
+		UserConnection{},
 	)
 
 	if err != nil {
 		log.Panic(err)
 	}
-
-	return db
 }

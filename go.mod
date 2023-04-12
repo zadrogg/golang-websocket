@@ -7,6 +7,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggo/http-swagger v1.3.3
 	golang.org/x/net v0.8.0
+	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.24.6
 )
 
@@ -26,5 +27,4 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gorm.io/driver/sqlite v1.4.4 // indirect
 )

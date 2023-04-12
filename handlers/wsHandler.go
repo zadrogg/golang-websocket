@@ -1,14 +1,17 @@
 package handlers
 
 import (
+	"fmt"
 	"golang.org/x/net/websocket"
 	"gorm.io/gorm"
 	"websocket/models"
 )
 
 type Message struct {
-	Text string `json:"message"`
+	Text   string `json:"message"`
+	UserId string `json:"user_id"`
 }
+
 type Hub struct {
 	clients          map[string]*websocket.Conn
 	addClientChan    chan *websocket.Conn
@@ -35,7 +38,7 @@ func Create(ws *websocket.Conn, h *Hub) {
 		var m Message
 		err := websocket.JSON.Receive(ws, &m)
 		if err != nil {
-			h.broadcastChan <- Message{err.Error()}
+			h.broadcastChan <- Message{Text: err.Error()}
 			h.removeClient(ws)
 			return
 		}
@@ -74,6 +77,12 @@ func (h *Hub) removeClient(conn *websocket.Conn) {
 }
 
 func (h *Hub) broadcast(m Message) {
+	socket := models.OnMessage(h.db, m.UserId)
+	conn := h.clients[socket]
 
-	models.OnMessage(h.db, "")
+	err := websocket.JSON.Send(conn, m.Text)
+	if err != nil {
+		fmt.Println("Error broadcasting message: ", err)
+		return
+	}
 }
