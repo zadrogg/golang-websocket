@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
-	"gorm.io/gorm"
+	"math/rand"
 	"websocket/models"
 )
 
@@ -17,7 +18,6 @@ type Hub struct {
 	addClientChan    chan *websocket.Conn
 	removeClientChan chan *websocket.Conn
 	broadcastChan    chan Message
-	db               *gorm.DB
 }
 
 var WsChannel *Hub
@@ -68,20 +68,20 @@ func (h *Hub) addClient(conn *websocket.Conn) {
 
 	token := request.Get("token")
 	userId := request.Get("identifier")
-	socket := conn.RemoteAddr().String()
+	socket := fmt.Sprintf("%d.%d", rand.Int(), rand.Int())
 
 	h.clients[socket] = conn
-	models.OnOpen(h.db, token, userId, socket)
+	models.OnOpen(models.DB, token, userId, socket)
 }
 
 func (h *Hub) removeClient(conn *websocket.Conn) {
 	socket := conn.LocalAddr().String()
 	delete(h.clients, socket)
-	models.OnClose(h.db, socket)
+	models.OnClose(models.DB, socket)
 }
 
 func (h *Hub) Broadcast(m Message) {
-	socket := models.OnMessage(h.db, m.UserId)
+	socket := models.OnMessage(models.DB, m.UserId)
 	conn := h.clients[socket]
 
 	err := websocket.JSON.Send(conn, m.Message)

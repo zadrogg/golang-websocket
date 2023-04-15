@@ -16,7 +16,10 @@ type UserConnection struct {
 
 func OnOpen(db *gorm.DB, token string, id string, socket string) {
 	var user UserConnection
-	db.Where("token = ?", token).First(&user)
+	if err := db.Debug().Where("token = ?", token).First(&user).Error; err != nil {
+
+	}
+
 	db.Model(&user).Updates(UserConnection{
 		UpdatedAt:      time.Time{},
 		SocketId:       socket,
