@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 	"gorm.io/gorm"
 	"websocket/models"
 )
 
 type Message struct {
-	Text   string `json:"message"`
-	UserId string `json:"user_id"`
+	Message string `json:"message"`
+	UserId  string `json:"user_id"`
 }
 
 type Hub struct {
@@ -20,13 +20,17 @@ type Hub struct {
 	db               *gorm.DB
 }
 
+var WsChannel *Hub
+
 func NewHub() *Hub {
-	return &Hub{
+	WsChannel = &Hub{
 		clients:          make(map[string]*websocket.Conn),
 		addClientChan:    make(chan *websocket.Conn),
 		removeClientChan: make(chan *websocket.Conn),
 		broadcastChan:    make(chan Message),
 	}
+
+	return WsChannel
 }
 
 func Create(ws *websocket.Conn, h *Hub) {
@@ -38,7 +42,7 @@ func Create(ws *websocket.Conn, h *Hub) {
 		var m Message
 		err := websocket.JSON.Receive(ws, &m)
 		if err != nil {
-			h.broadcastChan <- Message{Text: err.Error()}
+			h.broadcastChan <- Message{Message: err.Error()}
 			h.removeClient(ws)
 			return
 		}
@@ -54,7 +58,7 @@ func (h *Hub) run() {
 		case conn := <-h.removeClientChan:
 			h.removeClient(conn)
 		case m := <-h.broadcastChan:
-			h.broadcast(m)
+			h.Broadcast(m)
 		}
 	}
 }
@@ -76,13 +80,13 @@ func (h *Hub) removeClient(conn *websocket.Conn) {
 	models.OnClose(h.db, socket)
 }
 
-func (h *Hub) broadcast(m Message) {
+func (h *Hub) Broadcast(m Message) {
 	socket := models.OnMessage(h.db, m.UserId)
 	conn := h.clients[socket]
 
-	err := websocket.JSON.Send(conn, m.Text)
+	err := websocket.JSON.Send(conn, m.Message)
 	if err != nil {
-		fmt.Println("Error broadcasting message: ", err)
+		log.Info("Error broadcasting message: ", err)
 		return
 	}
 }

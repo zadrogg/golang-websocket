@@ -4,19 +4,18 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"golang.org/x/net/websocket"
 	"net/http"
 	"time"
+	"websocket/Validator"
 	"websocket/handlers"
 	"websocket/models"
+	"websocket/requests"
 )
 
 type ResponseWsToken struct {
 	Token string `json:"token"`
 }
-
-//var db *gorm.DB
 
 func WsToken(w http.ResponseWriter, r *http.Request) {
 
@@ -58,29 +57,21 @@ func ServerCreate(ws *websocket.Conn) {
 	handlers.Create(ws, hub)
 }
 
-func Connect(ws *websocket.Conn) {
-	var err error
+func SendMessage(w http.ResponseWriter, r *http.Request) {
+	Validator.RuleMethod(w, r, http.MethodPost)
 
-	fmt.Println(ws)
+	var input requests.SendMessageRequest
+	params := &input
 
-	for {
-		var reply string
-
-		fmt.Println(reply)
-
-		if err = websocket.Message.Receive(ws, &reply); err != nil {
-			fmt.Println("Can't receive")
-			break
-		}
-
-		fmt.Println("Received back from client: " + reply)
-
-		msg := "Received:  " + reply
-		fmt.Println("Sending to client: " + msg)
-
-		if err = websocket.Message.Send(ws, msg); err != nil {
-			fmt.Println("Can't send")
-			break
-		}
+	err := json.NewDecoder(r.Body).Decode(params)
+	if err != nil {
+		handlers.JSONError(w, err, http.StatusBadRequest)
+		return
 	}
+
+	handlers.WsChannel.Broadcast(
+		handlers.Message{
+			Message: params.Message,
+			UserId:  params.UserIdentifier,
+		})
 }

@@ -26,8 +26,7 @@ func prepareErrorResponse(code int, message string) *errorResponse {
 
 func sendThrow(w http.ResponseWriter, err error, code int) {
 	Error(err)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
+	JSONSetHeaders(w, code)
 
 	encode := json.NewEncoder(w).Encode(prepareErrorResponse(code, err.Error()))
 	if encode != nil {
@@ -43,10 +42,12 @@ func Throw400(w http.ResponseWriter, err error) {
 	sendThrow(w, err, 400)
 }
 
+func Throw405(w http.ResponseWriter, err error) {
+	sendThrow(w, err, http.StatusMethodNotAllowed)
+}
+
 func JSONError(w http.ResponseWriter, err interface{}, code int) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
+	JSONSetHeaders(w, code)
 	_ = json.NewEncoder(w).Encode(err)
 }
 
