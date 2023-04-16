@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"time"
 )
@@ -14,10 +16,11 @@ type UserConnection struct {
 	UserIdentifier string    `gorm:"index;not null" json:"user_identifier"`
 }
 
-func OnOpen(db *gorm.DB, token string, id string, socket string) {
+func OnOpen(db *gorm.DB, token string, id string, socket string) error {
 	var user UserConnection
 	if err := db.Debug().Where("token = ?", token).First(&user).Error; err != nil {
-
+		log.Info("No user found with this token: " + token)
+		return errors.New("No user found with this token: " + token)
 	}
 
 	db.Model(&user).Updates(UserConnection{
@@ -25,6 +28,8 @@ func OnOpen(db *gorm.DB, token string, id string, socket string) {
 		SocketId:       socket,
 		UserIdentifier: id,
 	})
+
+	return nil
 }
 
 func OnMessage(db *gorm.DB, id string) string {

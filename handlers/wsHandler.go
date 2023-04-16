@@ -72,7 +72,10 @@ func (h *Hub) addClient(conn *websocket.Conn) {
 	socket := fmt.Sprintf("%d.%d", rand.Int(), rand.Int())
 
 	h.clients[socket] = conn
-	models.OnOpen(models.DB, token, userId, socket)
+	err := models.OnOpen(models.DB, token, userId, socket)
+	if err != nil {
+		sendMessage(conn, err.Error())
+	}
 }
 
 func (h *Hub) removeClient(conn *websocket.Conn) {
@@ -84,8 +87,11 @@ func (h *Hub) removeClient(conn *websocket.Conn) {
 func (h *Hub) Broadcast(m Message) {
 	socket := models.OnMessage(models.DB, m.UserId)
 	conn := h.clients[socket]
+	sendMessage(conn, m.Message)
+}
 
-	err := websocket.JSON.Send(conn, m.Message)
+func sendMessage(conn *websocket.Conn, message string) {
+	err := websocket.JSON.Send(conn, message)
 	if err != nil {
 		log.Info("Error broadcasting message: ", err)
 		return
