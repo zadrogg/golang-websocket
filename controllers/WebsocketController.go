@@ -48,8 +48,7 @@ func WsToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServerCreate(ws *websocket.Conn) {
-	hub := handlers.NewHub()
-	handlers.Create(ws, hub)
+	handlers.Create(ws, handlers.NewHub())
 }
 
 func SendMessage(w http.ResponseWriter, r *http.Request) {

@@ -42,7 +42,8 @@ func Create(ws *websocket.Conn, h *Hub) {
 		var m Message
 		err := websocket.JSON.Receive(ws, &m)
 		if err != nil {
-			h.broadcastChan <- Message{Message: err.Error()}
+			log.Warning(err.Error())
+			//h.broadcastChan <- Message{Message: err.Error()}
 			h.removeClient(ws)
 			return
 		}
