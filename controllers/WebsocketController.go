@@ -63,6 +63,7 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 	var input requests.SendMessageRequest
 	params := &input
 
+	requests.Validate(w, input)
 	err := json.NewDecoder(r.Body).Decode(params)
 	if err != nil {
 		handlers.JSONError(w, err, http.StatusBadRequest)
