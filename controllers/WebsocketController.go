@@ -18,37 +18,32 @@ type ResponseWsToken struct {
 }
 
 func WsToken(w http.ResponseWriter, r *http.Request) {
+	Validator.RuleMethod(w, r, http.MethodPost)
+	var input models.UserConnection
+	userParams := &input
 
-	if r.Method == http.MethodPost {
-		var input models.UserConnection
-		userParams := &input
-
-		err := json.NewDecoder(r.Body).Decode(userParams)
-		if err != nil {
-			handlers.JSONError(w, err, http.StatusBadRequest)
-			return
-		}
-
-		token := md5.Sum([]byte(userParams.UserIdentifier + time.Now().String()))
-
-		createRow := models.DB.Create(&models.UserConnection{
-			CreatedAt:      time.Now(),
-			UpdatedAt:      time.Now(),
-			Token:          hex.EncodeToString(token[:]),
-			UserIdentifier: input.UserIdentifier,
-		})
-
-		if createRow.RowsAffected < 1 {
-			handlers.JSONError(w, createRow.Error, http.StatusInternalServerError)
-			return
-		}
-
-		handlers.JSONSetHeaders(w, http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&ResponseWsToken{Token: hex.EncodeToString(token[:])})
+	err := json.NewDecoder(r.Body).Decode(userParams)
+	if err != nil {
+		handlers.JSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusMethodNotAllowed)
+	token := md5.Sum([]byte(userParams.UserIdentifier + time.Now().String()))
+
+	createRow := models.DB.Create(&models.UserConnection{
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+		Token:          hex.EncodeToString(token[:]),
+		UserIdentifier: input.UserIdentifier,
+	})
+
+	if createRow.RowsAffected < 1 {
+		handlers.JSONError(w, createRow.Error, http.StatusInternalServerError)
+		return
+	}
+
+	handlers.JSONSetHeaders(w, http.StatusOK)
+	_ = json.NewEncoder(w).Encode(&ResponseWsToken{Token: hex.EncodeToString(token[:])})
 	return
 }
 
@@ -59,7 +54,6 @@ func ServerCreate(ws *websocket.Conn) {
 
 func SendMessage(w http.ResponseWriter, r *http.Request) {
 	Validator.RuleMethod(w, r, http.MethodPost)
-
 	var input requests.SendMessageRequest
 	params := &input
 
